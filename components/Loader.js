@@ -1,7 +1,5 @@
-
-
 //
-//  App.tsx
+//  Loader.js
 //  AppKey
 //
 //  Licensed to the Apache Software Foundation (ASF) under one
@@ -25,16 +23,46 @@
 //  Copyright © 2024 cosync. All rights reserved.
 //
 
+//Import React and Hook we needed
 import React from 'react';
-import {  AuthProvider } from './context/AuthContext';
-import AppNav from './components/AppNav';
- 
 
-export default function App() {  
+//Import all required component
+import { StyleSheet, View, Modal, ActivityIndicator } from 'react-native';
+
+const Loader = props => {
+  const { loading, ...attributes } = props;
+
   return (
-    <AuthProvider>
-       <AppNav/> 
-    </AuthProvider>
-   
+    <Modal
+      transparent={true}
+      animationType={'none'}
+      visible={loading}
+      >
+      <View style={styles.modalBackground}>
+        <View style={styles.activityIndicatorWrapper}>
+          <ActivityIndicator animating={loading} />
+        </View>
+      </View>
+    </Modal>
   );
-}
+};
+export default Loader;
+
+const styles = StyleSheet.create({
+  modalBackground: {
+    flex: 1,
+    alignItems: 'center',
+    flexDirection: 'column',
+    justifyContent: 'space-around',
+    backgroundColor: '#00000040',
+  },
+  activityIndicatorWrapper: {
+    backgroundColor: '#FFFFFF',
+    height: 100,
+    width: 100,
+    borderRadius: 10,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-around',
+  },
+});
