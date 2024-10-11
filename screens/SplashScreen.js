@@ -43,7 +43,7 @@ const SplashScreen = props => {
   return (
     <View style={styles.container}>
       <Image
-        source={require('../assets/cosynclogo.png')}
+        source={require('../assets/applogo.png')}
         style={{ width: '90%', resizeMode: 'contain', margin: 30 }}
       />
       <ActivityIndicator
