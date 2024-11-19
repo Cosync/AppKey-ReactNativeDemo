@@ -488,7 +488,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.appkey.appdemo;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cosync.cosync;
 				PRODUCT_NAME = AppKeyReactNativeDemo;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
@@ -516,7 +516,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = io.appkey.appdemo;
+				PRODUCT_BUNDLE_IDENTIFIER = io.cosync.cosync;
 				PRODUCT_NAME = AppKeyReactNativeDemo;
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";

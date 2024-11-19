@@ -48,12 +48,12 @@ const SignupScreen = props => {
   let [infotext, setInfoText] = useState('');
   let [displayName, setDisplayName] = useState('');
   
-  let [userEmail, setUserEmail] = useState(''); 
+  let [userHandle, setUserHandle] = useState(''); 
   let [signupCode, setSignupCode] = useState(''); 
   let [loading, setLoading] = useState(false); 
   let [verifyCode, setVerifyCode] = useState(false);  
   let [userLocale, setUserLocale] = useState('EN');
-  const { appData, signup, signupConfirm, signupComplete, appLocales } = useContext(AuthContext);
+  const {validateInput, appData, signup, signupConfirm, signupComplete, appLocales } = useContext(AuthContext);
 
   const ref_input_displayname = useRef();
   const ref_input_email = useRef();
@@ -64,13 +64,7 @@ const SignupScreen = props => {
     if (!Passkey.isSupported()) alert("Your device does not have Passkey Authentication.")
   }, []);
 
-
-  const validateEmail = (text) => {
-    return true;
-    let reg = /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/;
-    if (reg.test(text) === false) return false;
-    else return true;
-  }
+ 
 
   const validateForm = () => {
     if (!displayName) {
@@ -78,12 +72,9 @@ const SignupScreen = props => {
       return false;
     }
 
-    if (!userEmail) {
-      alert('Please Fill Email');
-      return false;
-    }
-    if (!validateEmail(userEmail)) {
-      alert('Please Fill a valid email');
+     
+    if (!validateInput(userHandle, false)) {
+      alert('Please Fill a valid handle');
       return false;
     } 
 
@@ -101,7 +92,7 @@ const SignupScreen = props => {
     try {
       
         
-        let authn = await signupComplete();
+        let authn = await signupComplete(userHandle, signupCode);
 
         if(authn.error) setErrorCodetext(`Error: ${authn.error.message}`);
         else {
@@ -131,7 +122,7 @@ const SignupScreen = props => {
 
     try {
 
-      let result = await signup(userEmail, displayName, userLocale);
+      let result = await signup(userHandle, displayName, userLocale);
       if(result.error){
         setErrortext(result.error.message); 
       } 
@@ -139,7 +130,7 @@ const SignupScreen = props => {
 
         result.challenge = base64url.toBase64(result.challenge)
         let attResponse = await Passkey.register(result);
-        attResponse.handle = userEmail;
+        attResponse.handle = userHandle;
 
         console.log("sign passkey attResponse ", attResponse)
 
@@ -153,7 +144,7 @@ const SignupScreen = props => {
             clientDataJSON: base64url.fromBase64(attResponse.response.clientDataJSON),
             clientExtensionResults: {},
             type: 'public-key',
-            email:userEmail
+            email:userHandle
           },
         }
 
@@ -259,9 +250,9 @@ const SignupScreen = props => {
             <View style={styles.SectionStyle}>
               <TextInput
                 style={styles.inputStyle}
-                onChangeText={value => setUserEmail(value)}
+                onChangeText={value => setUserHandle(value)}
                 //underlineColorAndroid="#4638ab"
-                placeholder="Enter Email"
+                placeholder="Enter Handle"
                 autoCapitalize="none" 
                 autoCorrect={false}
                 keyboardType="email-address" 

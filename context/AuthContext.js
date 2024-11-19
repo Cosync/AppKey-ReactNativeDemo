@@ -108,12 +108,14 @@ export function AuthProvider({ children }) {
 
     async function signupConfirm(authData){
         let result = await apiRequest("POST", "appuser/signupConfirm", authData)
+        if(result['signup-token']) setSignToken(result['signup-token'])
         return result 
     }
 
     async function signupComplete(handle, signupCode){
         let result = await apiRequest("POST", "appuser/signupComplete", {handle:handle, code:signupCode} )
         if(result['access-token']){
+            setSignToken(null)
             setUserTokenData(result['access-token'])
             setUserData(result)
         }
@@ -175,8 +177,30 @@ export function AuthProvider({ children }) {
 
 
 
+    const validateInput = (value, login = true) => {
+        if (!value) return false;
+        else if (login && appData.userNamesEnabled) return true;
+        else if(appData.handleType === "phone") return validatePhone(value);
+        else if(appData.handleType === "email") return validateEmail(value);
+        else return true;
+    }
+
+
+    const validateEmail = (email) => {
+        return (email.indexOf("@") > 0 && email.indexOf(".") > 2 &&  email.indexOf(".") < email.length - 1)
+    }
+
+
+    const validatePhone = (phone) => {
+        
+        var regex  = /^\+[0-9\s]{8,16}$/;
+        let val = phone.match(regex);
+        return val;
+    }
+
 
     const value = {
+        validateInput,
         login,
         logout,
         signup,
