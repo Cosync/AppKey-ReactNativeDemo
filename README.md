@@ -22,6 +22,15 @@ yarn start
 
 Let Metro Bundler run in its _own_ terminal. Open a _new_ terminal from the _root_ of your React Native project. Run the following command to start your _Android_ or _iOS_ app:
 
+### Update config file
+go to config/Config.js and update your APP_TOKEN
+
+### Update Xcode config
+open AppKeyReactNativeDemo.xcworkspace in ios folder
+add your Associated Domains in Signing & Capabilities 
+updated your Apple Developer Team and Bundler Identifier
+
+
 ### For Android
 
 ```bash
