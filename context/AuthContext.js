@@ -23,21 +23,21 @@
 //  Copyright © 2024 cosync. All rights reserved.
 //
 
-import React, {createContext, useState, useEffect} from "react"
-import {Config} from '../config/Config';   
-import uuid from 'react-native-uuid'; 
+import React, {createContext, useState, useEffect} from 'react';
+import {Config} from '../config/Config';
+import uuid from 'react-native-uuid';
 
 export const AuthContext = createContext();
-  
+
 
 export function AuthProvider({ children }) {
 
-    const [signToken, setSignToken] = useState()  
-    const [userTokenData, setUserTokenData] = useState()  
-    const [userData, setUserData] = useState() 
-    const [appData, setAppData] = useState()
-    const [appLocales, setAppLocales] = useState([]); 
-    const [errorRequest, setErrorRequest] = useState()
+    const [signToken, setSignToken] = useState();
+    const [userTokenData, setUserTokenData] = useState();
+    const [userData, setUserData] = useState();
+    const [appData, setAppData] = useState();
+    const [appLocales, setAppLocales] = useState([]);
+    const [errorRequest, setErrorRequest] = useState();
 
     useEffect(() => {
         getApplication();
@@ -45,128 +45,159 @@ export function AuthProvider({ children }) {
 
     async function getApplication() {
 
-        setAppLocales(prevItems => { 
+        setAppLocales(prevItems => {
             return [];
-        }); 
+        });
 
-        let app = await apiRequest("GET", "appuser/app")
+        let app = await apiRequest('GET', 'appuser/app');
 
         if(!app.error) {
 
-            setAppData(app)
+            setAppData(app);
 
             app.locales.map( item => {
                 let locale = {label: item, value: item};
-                setAppLocales(prevItems => { 
+                setAppLocales(prevItems => {
                     return [locale , ...prevItems];
                 });
-            })
-        }  
-
-        return app
-        
-    }
-
-    async function loginAnonymous(){ 
-        let id =  uuid.v4(); 
-        let result = await apiRequest("POST", "appuser/loginAnonymous", {handle:`ANON_${id}`})
-        console.log("loginAnonymous result = ", result)
-        return result 
-    }
-
-    async function loginAnonymousComplete(authData){ 
-      
-        let result = await apiRequest("POST", "appuser/loginAnonymousComplete", authData)
-        if(result['access-token']){
-            setUserTokenData(result['access-token'])
-            setUserData(result)
+            });
         }
 
-        return result 
+        return app;
+
     }
 
-    
+    async function loginAnonymous(){
+        let id =  uuid.v4();
+        let result = await apiRequest('POST', 'appuser/loginAnonymous', {handle:`ANON_${id}`});
+        console.log('loginAnonymous result = ', result);
+        return result;
+    }
 
-    async function login(handle) { 
-        let result = await apiRequest("POST", "appuser/login", {handle:handle})
-        return result 
+    async function loginAnonymousComplete(authData){
+
+        let result = await apiRequest('POST', 'appuser/loginAnonymousComplete', authData);
+        if(result['access-token']){
+            setUserTokenData(result['access-token']);
+            setUserData(result);
+        }
+
+        return result;
+    }
+
+
+
+    async function login(handle) {
+        let result = await apiRequest('POST', 'appuser/login', {handle:handle});
+        return result;
     }
 
     async function loginComplete(assertion){
-        let result = await apiRequest("POST", "appuser/loginComplete", assertion)
+        let result = await apiRequest('POST', 'appuser/loginComplete', assertion);
         if(result['access-token']){
-            setUserTokenData(result['access-token'])
-            setUserData(result)
+            setUserTokenData(result['access-token']);
+            setUserData(result);
         }
-        return result 
+        return result;
+    }
+
+    async function socialSignup(token, provider, handle, displayName, locale) {
+        let result = await apiRequest('POST', 'appuser/socialSignup', {token:token, provider:provider, handle:handle, displayName:displayName, locale:locale });
+        if(result['access-token']){
+            setSignToken(null);
+            setUserTokenData(result['access-token']);
+            setUserData(result);
+        }
+        return result;
+    }
+
+    async function socialLogin(token, provider){
+        let result = await apiRequest('POST', 'appuser/socialLogin', {token:token, provider:provider}, false);
+        if(result['access-token']){
+            setSignToken(null);
+            setUserTokenData(result['access-token']);
+            setUserData(result);
+        }
+        return result;
     }
 
 
     async function signup(handle, displayName, locale){
-        let result = await apiRequest("POST", "appuser/signup", {handle:handle, displayName:displayName, locale:locale})
-        return result 
+        let result = await apiRequest('POST', 'appuser/signup', {handle:handle, displayName:displayName, locale:locale});
+        return result;
     }
 
     async function signupConfirm(authData){
-        let result = await apiRequest("POST", "appuser/signupConfirm", authData)
-        if(result['signup-token']) setSignToken(result['signup-token'])
-        return result 
+        let result = await apiRequest('POST', 'appuser/signupConfirm', authData);
+        if(result['signup-token']) {setSignToken(result['signup-token']);}
+        return result;
     }
 
     async function signupComplete(handle, signupCode){
-        let result = await apiRequest("POST", "appuser/signupComplete", {handle:handle, code:signupCode} )
+        let result = await apiRequest('POST', 'appuser/signupComplete', {handle:handle, code:signupCode} );
         if(result['access-token']){
-            setSignToken(null)
-            setUserTokenData(result['access-token'])
-            setUserData(result)
+            setSignToken(null);
+            setUserTokenData(result['access-token']);
+            setUserData(result);
         }
-        return result
+        return result;
     }
+
+    async function setUserName(userName){
+        let result = await apiRequest('POST', 'appuser/setUsername', {userName:userName} );
+        if(result['access-token']){
+            setSignToken(null);
+            setUserTokenData(result['access-token']);
+            setUserData(result);
+        }
+        return result;
+    }
+
 
     async function updateProfile(profile){
-        let result = await apiRequest("POST", "appuser/updateProfile", profile)
+        let result = await apiRequest('POST', 'appuser/updateProfile', profile);
         if(result['access-token']){
-            setUserTokenData(result['access-token'])
-            setUserData(result)
+            setUserTokenData(result['access-token']);
+            setUserData(result);
         }
-        return result
+        return result;
     }
 
-    async function apiRequest(method, endpoint, params) {
+    async function apiRequest(method, endpoint, params, showAlert = true) {
         try {
             let option = {
                 method: method || 'POST',
                 headers: {
                     'Accept': 'application/json',
-                    'Content-Type': 'application/json' 
-                }
+                    'Content-Type': 'application/json',
+                },
             };
 
-            if(userTokenData) option.headers["access-token"] = userTokenData;
-            else if (signToken) option.headers["signup-token"] = signToken;
-            else option.headers["app-token"] = Config.APP_TOKEN;
+            if(userTokenData) {option.headers['access-token'] = userTokenData;}
+            else if (signToken) {option.headers['signup-token'] = signToken;}
+            else {option.headers['app-token'] = Config.APP_TOKEN;}
 
-            if (method !== "GET" && method !== "DELETE"){
-                option.body = JSON.stringify(params)
-            } 
+            if (method !== 'GET' && method !== 'DELETE'){
+                option.body = JSON.stringify(params);
+            }
 
-            let response = await fetch(`${Config.REST_API}/api/${endpoint}`, option)
+            let response = await fetch(`${Config.REST_API}/api/${endpoint}`, option);
 
-          
-            let result = await response.json(); 
-            console.log(`apiRequest '${endpoint}' - response result `, result)
-            
-            if (response.status !== 200){ 
-                setErrorRequest(result)
-                return {error:result}
-            } 
+
+            let result = await response.json();
+            console.log(`apiRequest '${endpoint}' - response result `, result);
+
+            if (response.status !== 200){
+                if(showAlert) setErrorRequest(result);
+                return {error:result};
+            }
             else{
                 return result;
-            } 
+            }
 
         } catch (error) {
-            setErrorRequest(error)
-            return {error:error}
+            setErrorRequest(error);
+            return {error:error};
         }
     }
 
@@ -179,29 +210,32 @@ export function AuthProvider({ children }) {
 
 
     const validateInput = (value, login = true) => {
-        if (!value) return false;
-        else if (login && appData.userNamesEnabled) return true;
-        else if(appData.handleType === "phone") return validatePhone(value);
-        else if(appData.handleType === "email") return validateEmail(value);
-        else return true;
-    }
+        if (!value) {return false;}
+        else if (login && appData.userNamesEnabled) {return true;}
+        else if(appData.handleType === 'phone') {return validatePhone(value);}
+        else if(appData.handleType === 'email') {return validateEmail(value);}
+        else {return true;}
+    };
 
 
     const validateEmail = (email) => {
-        return (email.indexOf("@") > 0 && email.indexOf(".") > 2 &&  email.indexOf(".") < email.length - 1)
-    }
+        return (email.indexOf('@') > 0 && email.indexOf('.') > 2 &&  email.indexOf('.') < email.length - 1);
+    };
 
 
     const validatePhone = (phone) => {
-        
+
         var regex  = /^\+[0-9\s]{8,16}$/;
         let val = phone.match(regex);
         return val;
-    }
+    };
 
 
     const value = {
         validateInput,
+        socialLogin,
+        socialSignup,
+        setUserName,
         login,
         logout,
         signup,
@@ -216,13 +250,13 @@ export function AuthProvider({ children }) {
         userTokenData,
         appData,
         appLocales,
-        errorRequest
-      }
+        errorRequest,
+      };
 
-      
+
     return (
         <AuthContext.Provider value={value}>
             {children}
         </AuthContext.Provider>
-    )
+    );
 }

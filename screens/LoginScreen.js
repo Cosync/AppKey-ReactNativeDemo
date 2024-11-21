@@ -1,4 +1,5 @@
- 
+/* eslint-disable react-native/no-inline-styles */
+
 //
 //  LoginScreen.js
 //  AppKey
@@ -24,7 +25,7 @@
 //  Copyright © 2023 cosync. All rights reserved.
 //
 
-import React, {useEffect, useState, useRef, useContext } from 'react'; 
+import React, {useEffect, useState, useRef, useContext } from 'react';
 import {
   StyleSheet,
   TextInput,
@@ -32,50 +33,56 @@ import {
   Text,
   ScrollView,
   Image,
-  Keyboard,
   TouchableOpacity,
   KeyboardAvoidingView,
-} from 'react-native'; 
-import Loader from '../components/Loader';  
+} from 'react-native';
+import Loader from '../components/Loader';
 import { Passkey } from 'react-native-passkey';
 import base64url from 'base64url';
-import uuid from 'react-native-uuid';
+import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
+
 import { AuthContext } from '../context/AuthContext';
 
 const LoginScreen = props => {
-  
-  let [userHandle, setUserHandle] = useState('');
- 
-  let [loading, setLoading] = useState(false);
- 
-  let [errortext, setErrortext] = useState('');
-  const ref_input_pwd = useRef(); 
 
-  const { validateInput, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
+  let [userHandle, setUserHandle] = useState('');
+  let [userName, setUserNameValue] = useState('');
+  let [userNameScreen, setUserNameScreen] = useState(false);
+  let [loading, setLoading] = useState(false);
+
+  let [errortext, setErrortext] = useState('');
+  const ref_input_pwd = useRef();
+
+  const { validateInput, socialLogin, socialSignup, setUserName, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
   global.Buffer = require('buffer').Buffer;
 
   useEffect(() => {
-    if (!Passkey.isSupported()) alert("Your device does not have Passkey Authentication.")
+    if (!Passkey.isSupported()) {alert('Your device does not have Passkey Authentication.');}
+
+    return appleAuth.onCredentialRevoked(async () => {
+      console.warn('If this function executes, User Credentials have been Revoked');
+    });
+
   }, []);
 
-   
+
 
   const loginAnonymousUser = async () => {
 
-    try { 
-      setLoading(true);  
-      
+    try {
+      setLoading(true);
+
       let resultAnon = await loginAnonymous();
-      console.log('AppKey loginAnonymous resultAnon  ', resultAnon);  
-      if(resultAnon.error){  
-        setErrortext(resultAnon.error.message); 
+      console.log('AppKey loginAnonymous resultAnon  ', resultAnon);
+      if(resultAnon.error){
+        setErrortext(resultAnon.error.message);
       }
       else {
-        resultAnon.challenge = base64url.toBase64(resultAnon.challenge)
+        resultAnon.challenge = base64url.toBase64(resultAnon.challenge);
 
         let result = await Passkey.register(resultAnon);
-        
-        console.log("sign passkey attResponse ", result)
+
+        console.log('sign passkey attResponse ', result);
 
         const convertToRegistrationResponse = {
           ...result,
@@ -87,63 +94,63 @@ const LoginScreen = props => {
             clientDataJSON: base64url.fromBase64(result.response.clientDataJSON),
             clientExtensionResults: {},
             type: 'public-key',
-            email:resultAnon.user.handle
+            email:resultAnon.user.handle,
           },
-          handle:resultAnon.user.handle
-        }
+          handle:resultAnon.user.handle,
+        };
         let authn = await loginAnonymousComplete(convertToRegistrationResponse);
 
-        if(authn.error) setErrortext(`Error: ${authn.error.message}`);
-       
+        if(authn.error) {setErrortext(`Error: ${authn.error.message}`);}
+
 
       }
 
     } catch (error) {
-      setErrortext(error.message); 
+      setErrortext(error.message);
     }
     finally{
-      setLoading(false);  
+      setLoading(false);
     }
 
-  }
-  
-  const handleSubmitLogin = async () => { 
-    setErrortext(''); 
-    
+  };
+
+  const handleSubmitLogin = async () => {
+    setErrortext('');
+
 
     if (!validateInput(userHandle)) {
       alert('Please fill a valid handle');
       return;
     }
- 
- 
-    setLoading(true);  
 
-   
+
+    setLoading(true);
+
+
     try {
-      let result = await login(userHandle); 
+      let result = await login(userHandle);
 
-      if(result.code && result.message){  
-        setErrortext(result.message); 
+      if(result.code && result.message){
+        setErrortext(result.message);
       }
       else{
 
-        console.log("Passkey login result ", result)
+        console.log('Passkey login result ', result);
 
-        result.challenge = base64url.toBase64(result.challenge)
+        result.challenge = base64url.toBase64(result.challenge);
 
-        let assertion = await Passkey.authenticate(result)
+        let assertion = await Passkey.authenticate(result);
 
-        console.log("Passkey.authenticate assertion ", assertion)
+        console.log('Passkey.authenticate assertion ', assertion);
 
         if(!assertion.id){
-          setErrortext("Invalid Passkey"); 
+          setErrortext('Invalid Passkey');
           return;
         }
-       
+
 
         const convertToAuthenticationResponseJSON = {
-          
+
           id: base64url.fromBase64(assertion.id),
           rawId: base64url.fromBase64(assertion.rawId),
           response: {
@@ -153,91 +160,176 @@ const LoginScreen = props => {
           },
           clientExtensionResults: {},
           type: 'public-key',
-          handle: userHandle
-        }
+          handle: userHandle,
+        };
 
         let authn = await loginComplete( convertToAuthenticationResponseJSON);
-        console.log("loginResult ", authn)
-        if(authn.error) setErrortext(`Error: ${authn.error.message}`);
+        console.log('loginResult ', authn);
+        if(authn.error) {setErrortext(`Error: ${authn.error.message}`);}
       }
 
     } catch (error) {
-      console.error(error)
-      setErrortext(error.message); 
+      console.error(error);
+      setErrortext(error.message);
     }
     finally{
-      setLoading(false);  
+      setLoading(false);
     }
-    
-       
+
+
   };
 
 
 
-  const completeLogin = async () => {
+  async function onAppleButtonPress() {
 
-    setLoading(true); 
+    try {
 
-   
+      // performs login request
+      const appleAuthRequestResponse = await appleAuth.performRequest({
+        requestedOperation: appleAuth.Operation.LOGIN,
+        // Note: it appears putting FULL_NAME first is important, see issue #293
+        requestedScopes: [appleAuth.Scope.FULL_NAME, appleAuth.Scope.EMAIL],
+      });
+
+
+
+      // get current authentication state for user
+      // /!\ This method must be tested on a real device. On the iOS simulator it always throws an error.
+      const credentialState = await appleAuth.getCredentialStateForUser(appleAuthRequestResponse.user);
+
+      console.log('credentialState = ', credentialState);
+
+      // use credentialState response to ensure the user is authenticated
+      if (credentialState === appleAuth.State.AUTHORIZED) {
+        // user is authenticated
+
+        console.log('appleAuthRequestResponse identityToken ', appleAuthRequestResponse.identityToken);
+        console.log('appleAuthRequestResponse fullName ', appleAuthRequestResponse.fullName);
+        setLoading(true);
+        let result = await socialLogin(appleAuthRequestResponse.identityToken, 'apple');
+        if(result.error){
+          if(result.error.code === 603){
+            if(appleAuthRequestResponse.fullName.givenName) {
+              socialSignupHandler(appleAuthRequestResponse.identityToken, 'apple', appleAuthRequestResponse.email, `${appleAuthRequestResponse.fullName.givenName} ${appleAuthRequestResponse.fullName.familyName}`);
+            }
+            else {
+              let errorMessage = "App cannot access to your profile name. Please remove this AppKey in 'Sign with Apple' from your icloud setting and try again.";
+              setErrortext(`AppKey: ${errorMessage}`);
+            }
+          }
+          else {
+            setErrortext(`AppKey: ${result.error.message}`);
+          }
+        }
+
+      }
+
+    } catch (error) {
+      setErrortext(`AppKey: ${error.message}`);
+    }
+    finally{
+      setLoading(false);
+    }
   }
- 
+
+  async function socialSignupHandler(token, provider, handle, displayName, locale) {
+    try {
+      setLoading(true);
+      let result = await socialSignup(token, provider, handle, displayName, locale);
+      if(result.error) {setErrortext(`Error: ${result.error.message}`);}
+
+    } catch (error) {
+      setErrortext(`Error: ${error.message}`);
+    }
+    finally{
+      setLoading(false);
+    }
+
+
+
+  }
+
+
   return (
     <View style={styles.mainBody}>
       <Loader loading={loading} />
-      
+
       <ScrollView keyboardShouldPersistTaps="handled">
 
         <View style={{ marginTop: 100 }}>
+
           <KeyboardAvoidingView enabled>
+
             <View style={{ alignItems: 'center' }}>
               <Image
                 source={require('../assets/applogo.png')}
-                style={{ 
+                style={{
                   height: 200,
                   resizeMode: 'contain',
                   margin: 30,
                 }}
               />
             </View>
-            <View style={styles.SectionStyle}>
-              <TextInput
-                style={styles.inputStyle}
-                value={userHandle}
-                onChangeText={value => setUserHandle(value)} 
-                placeholder="Enter handle"
-                autoCapitalize="none" 
-                autoCorrect={false}
-                keyboardType="email-address" 
-                returnKeyType="next" 
-                onSubmitEditing={() => ref_input_pwd.current.focus()}
-                blurOnSubmit={false}
-                
-              />
-            </View> 
 
-            
+              <View style={styles.SectionStyle}>
+                <TextInput
+                  style={styles.inputStyle}
+                  value={userHandle}
+                  onChangeText={value => setUserHandle(value)}
+                  placeholder="Enter handle"
+                  autoCapitalize="none"
+                  autoCorrect={false}
+                  keyboardType="email-address"
+                  returnKeyType="next"
+                  onSubmitEditing={() => ref_input_pwd.current.focus()}
+                  blurOnSubmit={false}
 
-            {errortext != '' && <Text style={styles.errorTextStyle}> {errortext} </Text>}
-            <TouchableOpacity
-              style={styles.buttonStyle}
-              activeOpacity={0.5}
-              onPress={handleSubmitLogin}>
-              <Text style={styles.buttonTextStyle}>LOGIN</Text>
-            </TouchableOpacity>
-            {appData && appData.anonymousLoginEnabled && 
+                />
+              </View>
+
+
+              {errortext != '' && <Text style={styles.errorTextStyle}> {errortext} </Text>}
               <TouchableOpacity
                 style={styles.buttonStyle}
                 activeOpacity={0.5}
-                onPress={loginAnonymousUser}>
-                <Text style={styles.buttonTextStyle}>LOGIN AS ANONYMOUS</Text>
-              </TouchableOpacity> 
-            }
-            <TouchableOpacity
-              style={styles.buttonStyle}
-              activeOpacity={0.5}
-              onPress={() => props.navigation.navigate('Signup')}>
-              <Text style={styles.buttonTextStyle}> SIGNUP</Text>
-            </TouchableOpacity> 
+                onPress={handleSubmitLogin}>
+                <Text style={styles.buttonTextStyle}>LOGIN</Text>
+              </TouchableOpacity>
+              {appData && appData.anonymousLoginEnabled &&
+                <TouchableOpacity
+                  style={styles.buttonStyle}
+                  activeOpacity={0.5}
+                  onPress={loginAnonymousUser}>
+                  <Text style={styles.buttonTextStyle}>LOGIN AS ANONYMOUS</Text>
+                </TouchableOpacity>
+              }
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                activeOpacity={0.5}
+                onPress={() => props.navigation.navigate('Signup')}>
+                <Text style={styles.buttonTextStyle}> SIGNUP</Text>
+              </TouchableOpacity>
+
+              {appData && (appData.googleLoginEnabled || appData.appleLoginEnabled) &&   <Text style={styles.registerTextStyle}> OR </Text>  }
+
+              {appData && appData.appleLoginEnabled &&
+                <View style={styles.SectionCenterStyle}>
+                  <AppleButton
+                    buttonStyle={AppleButton.Style.BLACK}
+                    buttonType={AppleButton.Type.SIGN_IN}
+                    style={{
+                      width: 220, // You must specify a width
+                      height: 45, // You must specify a height
+                    }}
+                    onPress={() => onAppleButtonPress()}
+                  />
+                </View>
+              }
+
+              {appData && appData.googleLoginEnabled &&
+                <View style={styles.SectionCenterStyle} />
+              }
 
 
           </KeyboardAvoidingView>
@@ -256,6 +348,14 @@ const styles = StyleSheet.create({
   },
   SectionStyle: {
     flexDirection: 'row',
+    height: 40,
+    marginTop: 20,
+    marginLeft: 35,
+    marginRight: 35,
+    margin: 10,
+  },
+  SectionCenterStyle: {
+    alignItems: 'center',
     height: 40,
     marginTop: 20,
     marginLeft: 35,
