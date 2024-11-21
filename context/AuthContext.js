@@ -70,6 +70,7 @@ export function AuthProvider({ children }) {
     async function loginAnonymous(){ 
         let id =  uuid.v4(); 
         let result = await apiRequest("POST", "appuser/loginAnonymous", {handle:`ANON_${id}`})
+        console.log("loginAnonymous result = ", result)
         return result 
     }
 

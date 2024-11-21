@@ -1,7 +1,7 @@
  
 //
 //  LoginScreen.js
-//  CosyncAuth
+//  AppKey
 //
 //  Licensed to the Apache Software Foundation (ASF) under one
 //  or more contributor license agreements.  See the NOTICE file
@@ -66,7 +66,7 @@ const LoginScreen = props => {
       setLoading(true);  
       
       let resultAnon = await loginAnonymous();
-      console.log('CosyncAuth loginAnonymous resultAnon  ', resultAnon);  
+      console.log('AppKey loginAnonymous resultAnon  ', resultAnon);  
       if(resultAnon.error){  
         setErrortext(resultAnon.error.message); 
       }
@@ -87,7 +87,7 @@ const LoginScreen = props => {
             clientDataJSON: base64url.fromBase64(result.response.clientDataJSON),
             clientExtensionResults: {},
             type: 'public-key',
-            email:userHandle
+            email:resultAnon.user.handle
           },
           handle:resultAnon.user.handle
         }
