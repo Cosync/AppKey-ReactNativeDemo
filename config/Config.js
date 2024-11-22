@@ -1,5 +1,6 @@
 
 export const Config = { 
     REST_API : 'https://api.appkey.io',
-    APP_TOKEN : "YOUR APP TOKEN"
+    GOOGLE_CLIENT_ID: 'iOS Google Client ID',
+    APP_TOKEN : 'Your App Token'
 }

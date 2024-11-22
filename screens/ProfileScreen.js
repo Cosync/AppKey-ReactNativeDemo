@@ -51,7 +51,7 @@ const ProfileScreen = props => {
   let [userNameScreen, setUserNameScreen] = useState(false);
   let [userName, setUserNameValue] = useState('');
 
-  const { userData, appLocales, logout, updateProfile, appData } = useContext(AuthContext);
+  const { userData, appLocales, logout, updateProfile, setUserName, appData } = useContext(AuthContext);
 
   useEffect(() => {
     if(userData !== undefined){
@@ -62,10 +62,13 @@ const ProfileScreen = props => {
   }, [userData]);
 
   useEffect(() => {
-    if(appData.userNamesEnabled && !userData.userName){
+
+    console.log('PrifleScreen userData ', userData);
+
+    if(appData.userNamesEnabled && userData && userData.loginProvider === 'handle' && !userData.userName){
        setUserNameScreen(true);
     }
-  }, []);
+  }, [userData]);
 
 
   const setUserLocale = (locale) => {
@@ -95,7 +98,7 @@ const ProfileScreen = props => {
   };
 
 
-  const handleSetUserName = () => {
+  const handleSetUserName = async () => {
 
     if (!userName) {
       alert('Please fill user name');
@@ -104,9 +107,12 @@ const ProfileScreen = props => {
 
     setLoading(true);
 
-    let result = updateProfile({displayName:displayName});
+    let result = await setUserName(userName);
 
     if(result.error) {setErrortext(`Error: ${result.error.message}`);}
+    else {
+      setUserNameScreen(false)
+    }
     setLoading(false);
 
   };
@@ -152,6 +158,7 @@ const ProfileScreen = props => {
         <View>
           <Text style={styles.titileTextStyle}>Welcome: {userData.displayName}</Text>
           <Text style={styles.bodyTextStyle}>Handle: {userData.handle}</Text>
+          { userData.userName && <Text style={styles.bodyTextStyle}>User Name: {userData.userName}</Text>}
         </View>
       }
         <View style={styles.SectionStyle}>

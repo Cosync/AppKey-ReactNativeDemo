@@ -19,9 +19,17 @@ cd ios && pod install && cd..
 
 ### Update Xcode config
 1, open AppKeyReactNativeDemo.xcworkspace in ios folder
-2, add your Associated Domains in Signing & Capabilities 
+2, add your Associated Domains in Signing & Capabilities tap
 3, updated your Apple Developer Team and Bundler Identifier
 
+### Apple Login
+1, open AppKeyReactNativeDemo.xcworkspace in ios folder
+2, add Sign in with Apple in Signing & Capabilities tap
+
+### Google Login
+1, config your Google API console for client id follow this link: https://react-native-google-signin.github.io/docs/setting-up/ios
+2, open AppKeyReactNativeDemo.xcworkspace in ios folder
+3, add URL Types in Info tap
 
 ### For Android
 

@@ -40,30 +40,52 @@ import Loader from '../components/Loader';
 import { Passkey } from 'react-native-passkey';
 import base64url from 'base64url';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
+import {
+  GoogleSignin,
+  GoogleSigninButton,
+  statusCodes,
+} from '@react-native-google-signin/google-signin';
 
 import { AuthContext } from '../context/AuthContext';
+import {Config} from '../config/Config';
 
 const LoginScreen = props => {
 
   let [userHandle, setUserHandle] = useState('');
-  let [userName, setUserNameValue] = useState('');
-  let [userNameScreen, setUserNameScreen] = useState(false);
+
   let [loading, setLoading] = useState(false);
 
   let [errortext, setErrortext] = useState('');
   const ref_input_pwd = useRef();
 
-  const { validateInput, socialLogin, socialSignup, setUserName, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
+  const { validateInput, socialLogin, socialSignup, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
   global.Buffer = require('buffer').Buffer;
 
   useEffect(() => {
     if (!Passkey.isSupported()) {alert('Your device does not have Passkey Authentication.');}
 
+
+
+
     return appleAuth.onCredentialRevoked(async () => {
       console.warn('If this function executes, User Credentials have been Revoked');
     });
 
+
   }, []);
+
+  useEffect(() => {
+
+    if (appData && appData.googleLoginEnabled){
+
+      GoogleSignin.configure({
+        iosClientId: Config.GOOGLE_CLIENT_ID,
+      });
+
+    }
+
+
+  }, [appData]);
 
 
 
@@ -180,6 +202,67 @@ const LoginScreen = props => {
   };
 
 
+  async function onGoogleLoginPress() {
+    try {
+      await GoogleSignin.hasPlayServices();
+      const response = await GoogleSignin.signIn();
+      if (response.type === 'success') {
+        console.log(response.data);
+
+        socialLoginHandler(response.data.idToken, response.data.user, 'google');
+
+      } else {
+        // sign in was cancelled by user
+        setErrortext(`AppKey Google User Response: ${response.type}`);
+
+      }
+
+
+    } catch (error) {
+      console.error('ERROR: ', error);
+      setErrortext(`AppKey: ${error.message}`);
+      return error;
+    }
+
+  }
+
+  async function socialLoginHandler(token, profile, provider) {
+    try {
+      setLoading(true);
+
+      let result = await socialLogin(token, provider);
+
+      if(result.error){
+        if(result.error.code === 603){
+
+          setErrortext('AppKey: Creating New Account');
+
+          if(provider === 'apple' ) {
+            if(profile.fullName.givenName) {
+              socialSignupHandler(token, 'apple', profile.email, `${profile.fullName.givenName} ${profile.fullName.familyName}`);
+            }
+            else {
+              let errorMessage = "App cannot access to your profile name. Please remove this AppKey in 'Sign with Apple' from your icloud setting and try again.";
+              setErrortext(`AppKey: ${errorMessage}`);
+            }
+          }
+          else {
+            socialSignupHandler(token, 'google', profile.email, `${profile.givenName} ${profile.familyName}`);
+          }
+
+        }
+        else {
+          setErrortext(`AppKey: ${result.error.message}`);
+        }
+      }
+
+    } catch (error) {
+      setErrortext(`Error: ${error.message}`);
+    }
+    finally{
+      setLoading(false);
+    }
+  }
 
   async function onAppleButtonPress() {
 
@@ -206,22 +289,10 @@ const LoginScreen = props => {
 
         console.log('appleAuthRequestResponse identityToken ', appleAuthRequestResponse.identityToken);
         console.log('appleAuthRequestResponse fullName ', appleAuthRequestResponse.fullName);
-        setLoading(true);
-        let result = await socialLogin(appleAuthRequestResponse.identityToken, 'apple');
-        if(result.error){
-          if(result.error.code === 603){
-            if(appleAuthRequestResponse.fullName.givenName) {
-              socialSignupHandler(appleAuthRequestResponse.identityToken, 'apple', appleAuthRequestResponse.email, `${appleAuthRequestResponse.fullName.givenName} ${appleAuthRequestResponse.fullName.familyName}`);
-            }
-            else {
-              let errorMessage = "App cannot access to your profile name. Please remove this AppKey in 'Sign with Apple' from your icloud setting and try again.";
-              setErrortext(`AppKey: ${errorMessage}`);
-            }
-          }
-          else {
-            setErrortext(`AppKey: ${result.error.message}`);
-          }
-        }
+
+
+        socialLoginHandler(appleAuthRequestResponse.identityToken, appleAuthRequestResponse, 'apple');
+
 
       }
 
@@ -257,7 +328,7 @@ const LoginScreen = props => {
 
       <ScrollView keyboardShouldPersistTaps="handled">
 
-        <View style={{ marginTop: 100 }}>
+
 
           <KeyboardAvoidingView enabled>
 
@@ -282,7 +353,7 @@ const LoginScreen = props => {
                   autoCorrect={false}
                   keyboardType="email-address"
                   returnKeyType="next"
-                  onSubmitEditing={() => ref_input_pwd.current.focus()}
+                  onSubmitEditing={() => handleSubmitLogin}
                   blurOnSubmit={false}
 
                 />
@@ -313,7 +384,7 @@ const LoginScreen = props => {
 
               {appData && (appData.googleLoginEnabled || appData.appleLoginEnabled) &&   <Text style={styles.registerTextStyle}> OR </Text>  }
 
-              {appData && appData.appleLoginEnabled &&
+              {appData && appData.appleLoginEnabled && appData.appleBundleId &&
                 <View style={styles.SectionCenterStyle}>
                   <AppleButton
                     buttonStyle={AppleButton.Style.BLACK}
@@ -327,13 +398,18 @@ const LoginScreen = props => {
                 </View>
               }
 
-              {appData && appData.googleLoginEnabled &&
-                <View style={styles.SectionCenterStyle} />
+              {appData && appData.googleLoginEnabled && appData.googleClientId &&
+                  <TouchableOpacity
+                    style={styles.buttonStyle}
+                    activeOpacity={0.5}
+                    onPress={onGoogleLoginPress}>
+                    <Text style={styles.buttonTextStyle}> Sign In With Google</Text>
+                  </TouchableOpacity>
               }
 
 
           </KeyboardAvoidingView>
-        </View>
+
       </ScrollView>
     </View>
   );

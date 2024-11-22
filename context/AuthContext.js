@@ -182,13 +182,11 @@ export function AuthProvider({ children }) {
             }
 
             let response = await fetch(`${Config.REST_API}/api/${endpoint}`, option);
-
-
             let result = await response.json();
             console.log(`apiRequest '${endpoint}' - response result `, result);
 
             if (response.status !== 200){
-                if(showAlert) setErrorRequest(result);
+                if(showAlert === true) setErrorRequest(result);
                 return {error:result};
             }
             else{
