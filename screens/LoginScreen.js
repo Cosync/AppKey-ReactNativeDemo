@@ -56,16 +56,13 @@ const LoginScreen = props => {
   let [loading, setLoading] = useState(false);
 
   let [errortext, setErrortext] = useState('');
-  const ref_input_pwd = useRef();
+ 
 
   const { validateInput, socialLogin, socialSignup, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
   global.Buffer = require('buffer').Buffer;
 
   useEffect(() => {
     if (!Passkey.isSupported()) {alert('Your device does not have Passkey Authentication.');}
-
-
-
 
     return appleAuth.onCredentialRevoked(async () => {
       console.warn('If this function executes, User Credentials have been Revoked');
@@ -230,16 +227,18 @@ const LoginScreen = props => {
     try {
       setLoading(true);
 
-      let result = await socialLogin(token, provider);
+      let result = await socialLogin(token, provider, false);
+      console.log('socialLoginHandler result ', result);
 
       if(result.error){
+
         if(result.error.code === 603){
 
-          setErrortext('AppKey: Creating New Account');
+          //setErrortext('AppKey: Creating New Account');
 
           if(provider === 'apple' ) {
             if(profile.fullName.givenName) {
-              socialSignupHandler(token, 'apple', profile.email, `${profile.fullName.givenName} ${profile.fullName.familyName}`);
+              socialSignupHandler(token, 'apple', profile.email);
             }
             else {
               let errorMessage = "App cannot access to your profile name. Please remove this AppKey in 'Sign with Apple' from your icloud setting and try again.";
@@ -247,7 +246,7 @@ const LoginScreen = props => {
             }
           }
           else {
-            socialSignupHandler(token, 'google', profile.email, `${profile.givenName} ${profile.familyName}`);
+            socialSignupHandler(token, 'google', profile.email);
           }
 
         }
@@ -257,6 +256,7 @@ const LoginScreen = props => {
       }
 
     } catch (error) {
+      console.log('socialLoginHandler error ', error)
       setErrortext(`Error: ${error.message}`);
     }
     finally{
@@ -304,10 +304,10 @@ const LoginScreen = props => {
     }
   }
 
-  async function socialSignupHandler(token, provider, handle, displayName, locale) {
+  async function socialSignupHandler(token, provider, handle, locale) {
     try {
       setLoading(true);
-      let result = await socialSignup(token, provider, handle, displayName, locale);
+      let result = await socialSignup(token, provider, handle, locale);
       if(result.error) {setErrortext(`Error: ${result.error.message}`);}
 
     } catch (error) {

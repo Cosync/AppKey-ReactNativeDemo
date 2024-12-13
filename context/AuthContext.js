@@ -23,9 +23,10 @@
 //  Copyright © 2024 cosync. All rights reserved.
 //
 
-import React, {createContext, useState, useEffect} from 'react';
+import React, {createContext, useState, useEffect, useRef} from 'react';
 import {Config} from '../config/Config';
 import uuid from 'react-native-uuid';
+import AppKeyWebAuthn from 'appkey-webauthn';
 
 export const AuthContext = createContext();
 
@@ -38,10 +39,23 @@ export function AuthProvider({ children }) {
     const [appData, setAppData] = useState();
     const [appLocales, setAppLocales] = useState([]);
     const [errorRequest, setErrorRequest] = useState();
+    const renderRef = useRef(false);
+    const appKeyAuth = new AppKeyWebAuthn({appToken: Config.APP_TOKEN, apiUrl:Config.REST_API}).getInstance();
 
     useEffect(() => {
-        getApplication();
-    }, []);
+        setErrorRequest()
+        
+        if (renderRef.current === false){  
+            getApplication();
+
+            return () => {
+                renderRef.current = true;
+                console.log("AuthContext render clean up. ");
+            }
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
 
     async function getApplication() {
 
@@ -49,7 +63,7 @@ export function AuthProvider({ children }) {
             return [];
         });
 
-        let app = await apiRequest('GET', 'appuser/app');
+        let app = await apiRequest('app', null, false);
 
         if(!app.error) {
 
@@ -69,14 +83,14 @@ export function AuthProvider({ children }) {
 
     async function loginAnonymous(){
         let id =  uuid.v4();
-        let result = await apiRequest('POST', 'appuser/loginAnonymous', {handle:`ANON_${id}`});
+        let result = await apiRequest('loginAnonymous', {handle:`ANON_${id}`});
         console.log('loginAnonymous result = ', result);
         return result;
     }
 
     async function loginAnonymousComplete(authData){
 
-        let result = await apiRequest('POST', 'appuser/loginAnonymousComplete', authData);
+        let result = await apiRequest('loginAnonymousComplete', authData);
         if(result['access-token']){
             setUserTokenData(result['access-token']);
             setUserData(result);
@@ -88,12 +102,12 @@ export function AuthProvider({ children }) {
 
 
     async function login(handle) {
-        let result = await apiRequest('POST', 'appuser/login', {handle:handle});
+        let result = await apiRequest('login', {handle:handle});
         return result;
     }
 
     async function loginComplete(assertion){
-        let result = await apiRequest('POST', 'appuser/loginComplete', assertion);
+        let result = await apiRequest('loginComplete', assertion);
         if(result['access-token']){
             setUserTokenData(result['access-token']);
             setUserData(result);
@@ -101,8 +115,8 @@ export function AuthProvider({ children }) {
         return result;
     }
 
-    async function socialSignup(token, provider, handle, displayName, locale) {
-        let result = await apiRequest('POST', 'appuser/socialSignup', {token:token, provider:provider, handle:handle, displayName:displayName, locale:locale });
+    async function socialSignup(token, provider, handle, locale) {
+        let result = await apiRequest('socialSignup', {token:token, provider:provider, handle:handle, locale:locale });
         if(result['access-token']){
             setSignToken(null);
             setUserTokenData(result['access-token']);
@@ -112,7 +126,7 @@ export function AuthProvider({ children }) {
     }
 
     async function socialLogin(token, provider){
-        let result = await apiRequest('POST', 'appuser/socialLogin', {token:token, provider:provider}, false);
+        let result = await apiRequest('socialLogin', {token:token, provider:provider}, false);
         if(result['access-token']){
             setSignToken(null);
             setUserTokenData(result['access-token']);
@@ -123,18 +137,19 @@ export function AuthProvider({ children }) {
 
 
     async function signup(handle, displayName, locale){
-        let result = await apiRequest('POST', 'appuser/signup', {handle:handle, displayName:displayName, locale:locale});
+        let result = await apiRequest('signup', {handle:handle, displayName:displayName, locale:locale});
         return result;
     }
 
     async function signupConfirm(authData){
-        let result = await apiRequest('POST', 'appuser/signupConfirm', authData);
+        let result = await apiRequest('signupConfirm', authData);
         if(result['signup-token']) {setSignToken(result['signup-token']);}
         return result;
     }
 
     async function signupComplete(handle, signupCode){
-        let result = await apiRequest('POST', 'appuser/signupComplete', {handle:handle, code:signupCode} );
+       
+        let result = await apiRequest('signupComplete', {handle:handle, code:signupCode, signupToken:signToken} );
         if(result['access-token']){
             setSignToken(null);
             setUserTokenData(result['access-token']);
@@ -144,7 +159,7 @@ export function AuthProvider({ children }) {
     }
 
     async function setUserName(userName){
-        let result = await apiRequest('POST', 'appuser/setUsername', {userName:userName} );
+        let result = await apiRequest('setUsername', {userName:userName} );
         if(result['access-token']){
             setSignToken(null);
             setUserTokenData(result['access-token']);
@@ -155,7 +170,7 @@ export function AuthProvider({ children }) {
 
 
     async function updateProfile(profile){
-        let result = await apiRequest('POST', 'appuser/updateProfile', profile);
+        let result = await apiRequest('updateProfile', profile);
         if(result['access-token']){
             setUserTokenData(result['access-token']);
             setUserData(result);
@@ -163,30 +178,77 @@ export function AuthProvider({ children }) {
         return result;
     }
 
-    async function apiRequest(method, endpoint, params, showAlert = true) {
+    async function apiRequest(func, data, showAlert = true) {
         try {
-            let option = {
-                method: method || 'POST',
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json',
-                },
-            };
 
-            if(userTokenData) {option.headers['access-token'] = userTokenData;}
-            else if (signToken) {option.headers['signup-token'] = signToken;}
-            else {option.headers['app-token'] = Config.APP_TOKEN;}
+            console.log(`apiRequest funct ${func} data: `, data);
+           
+            let result;
 
-            if (method !== 'GET' && method !== 'DELETE'){
-                option.body = JSON.stringify(params);
+            switch (func) {
+                case 'app':
+                    result = await appKeyAuth.app.getApplication();
+                    break;
+
+                case 'signup':
+                    result = await appKeyAuth.auth.signup(data);
+                    break;
+
+                case 'signupConfirm':
+                    result = await appKeyAuth.auth.signupConfirm(data);
+                    break;
+
+                case 'signupComplete':
+                    result = await appKeyAuth.auth.signupComplete(data);
+                    let user = appKeyAuth.auth.user;
+                    console.log('signupComplete user ', user);
+                    break;
+                case 'login':
+                    result = await appKeyAuth.auth.login(data);
+                    break;
+
+                case 'loginComplete':
+                    result = await appKeyAuth.auth.loginComplete(data);
+                    break;
+
+                case 'socialLogin':
+                    result = await appKeyAuth.auth.socialLogin(data);
+                    break;
+                case 'socialSignup':
+                    result = await appKeyAuth.auth.socialSignup(data);
+                    break;
+                case 'loginAnonymous':
+                    result = await appKeyAuth.auth.loginAnonymous(data);
+                    break;
+                case 'loginAnonymousComplete':
+                    result = await appKeyAuth.auth.loginAnonymousComplete(data);
+                    break;
+                case 'userNameAvailable':
+                    result = await appKeyAuth.profile.userNameAvailable(data);
+                    break;
+                case 'setUserName':
+                    result = await appKeyAuth.profile.setUserName(data);
+                    break;
+                case 'updateProfile':
+                    result = await appKeyAuth.profile.updateProfile(data);
+                    break;
+                case 'verify':
+                    result = await appKeyAuth.auth.verify(data);
+                    break;
+                case 'verifyComplete':
+                    result = await appKeyAuth.auth.verifyComplete(data);
+                    break;
+
+                default:
+                    break;
             }
 
-            let response = await fetch(`${Config.REST_API}/api/${endpoint}`, option);
-            let result = await response.json();
-            console.log(`apiRequest '${endpoint}' - response result `, result);
 
-            if (response.status !== 200){
-                if(showAlert === true) setErrorRequest(result);
+            console.log('apiRequest result ', result);
+
+            if (result && result.code){
+                if(showAlert === true) { setErrorRequest(result); } 
+                if(result.code === 405) { logout(); } 
                 return {error:result};
             }
             else{
@@ -194,7 +256,12 @@ export function AuthProvider({ children }) {
             }
 
         } catch (error) {
-            setErrorRequest(error);
+
+            console.log('apiRequest catch error ', error); 
+            
+            if(showAlert === true) { setErrorRequest(error); }
+            if(error.code === 405) { logout(); }
+
             return {error:error};
         }
     }
@@ -203,6 +270,7 @@ export function AuthProvider({ children }) {
     function logout() {
         setUserData();
         setUserTokenData();
+        appKeyAuth.auth.logout();
     }
 
 
