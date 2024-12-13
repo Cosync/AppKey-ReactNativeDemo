@@ -41,9 +41,7 @@ import { Passkey } from 'react-native-passkey';
 import base64url from 'base64url';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
 import {
-  GoogleSignin,
-  GoogleSigninButton,
-  statusCodes,
+  GoogleSignin
 } from '@react-native-google-signin/google-signin';
 
 import { AuthContext } from '../context/AuthContext';
@@ -235,10 +233,11 @@ const LoginScreen = props => {
         if(result.error.code === 603){
 
           //setErrortext('AppKey: Creating New Account');
-
+          let displayName;
           if(provider === 'apple' ) {
             if(profile.fullName.givenName) {
-              socialSignupHandler(token, 'apple', profile.email);
+              displayName = `${profile.fullName.givenName} ${profile.fullName.familyName}`
+              socialSignupHandler(token, 'apple', profile.email, displayName);
             }
             else {
               let errorMessage = "App cannot access to your profile name. Please remove this AppKey in 'Sign with Apple' from your icloud setting and try again.";
@@ -246,7 +245,8 @@ const LoginScreen = props => {
             }
           }
           else {
-            socialSignupHandler(token, 'google', profile.email);
+            displayName = `${profile.givenName} ${profile.familyName}`
+            socialSignupHandler(token, 'google', profile.email, displayName);
           }
 
         }
@@ -304,10 +304,10 @@ const LoginScreen = props => {
     }
   }
 
-  async function socialSignupHandler(token, provider, handle, locale) {
+  async function socialSignupHandler(token, provider, handle, displayName, locale) {
     try {
       setLoading(true);
-      let result = await socialSignup(token, provider, handle, locale);
+      let result = await socialSignup(token, provider, handle, displayName, locale);
       if(result.error) {setErrortext(`Error: ${result.error.message}`);}
 
     } catch (error) {
