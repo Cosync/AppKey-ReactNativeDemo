@@ -58,17 +58,12 @@ const ProfileScreen = props => {
       setDisplayName(userData.displayName);
       setLocale(userData.locale);
 
+      if(appData.userNamesEnabled && userData && userData.loginProvider === 'handle' && !userData.userName){
+        setUserNameScreen(true);
+     }
+
     }
-  }, [userData]);
-
-  useEffect(() => {
-
-    console.log('PrifleScreen userData ', userData);
-
-    if(appData.userNamesEnabled && userData && userData.loginProvider === 'handle' && !userData.userName){
-       setUserNameScreen(true);
-    }
-  }, [userData]);
+  }, [appData.userNamesEnabled, userData]);
 
 
   const setUserLocale = (locale) => {
@@ -109,11 +104,15 @@ const ProfileScreen = props => {
 
     let result = await setUserName(userName);
 
+    setLoading(false);
+
     if(result.error) {setErrortext(`Error: ${result.error.message}`);}
     else {
+
       setUserNameScreen(false)
     }
-    setLoading(false);
+
+   
 
   };
 
@@ -125,8 +124,18 @@ const ProfileScreen = props => {
     <View style={styles.mainBody}>
       <Loader loading={loading} />
 
-    { userNameScreen ?
+    { userNameScreen && !userData.userName ?
      <View>
+
+        {userData &&
+          <View>
+            <Text style={styles.titileTextStyle}>Welcome: {userData.displayName}</Text>
+            <Text style={styles.bodyTextStyle}>Handle: {userData.handle}</Text>
+
+            <Text style={styles.bodyTextStyle}>Please set your user name</Text>
+          </View>
+        }
+
         <View style={styles.SectionStyle}>
 
             <TextInput
@@ -141,17 +150,17 @@ const ProfileScreen = props => {
 
             />
         </View>
-
-        <View style={styles.SectionStyle}>
-            <TouchableOpacity
-              style={styles.buttonStyle}
-              activeOpacity={0.5}
-              onPress={handleSetUserName}>
-              <Text style={styles.buttonTextStyle}>Submit</Text>
-            </TouchableOpacity>
+        <View style={styles.viewSection}>
+          <View style={styles.SectionStyle}>
+              <TouchableOpacity
+                style={styles.buttonStyle}
+                activeOpacity={0.5}
+                onPress={handleSetUserName}>
+                <Text style={styles.buttonTextStyle}>Submit</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
-
       :
     <View>
       {userData &&

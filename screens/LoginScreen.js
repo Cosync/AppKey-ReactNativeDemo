@@ -91,6 +91,7 @@ const LoginScreen = props => {
 
       let resultAnon = await loginAnonymous();
       console.log('AppKey loginAnonymous resultAnon  ', resultAnon);
+      
       if(resultAnon.error){
         setErrortext(resultAnon.error.message);
       }
@@ -109,10 +110,10 @@ const LoginScreen = props => {
             ...result.response,
             attestationObject: base64url.fromBase64(result.response.attestationObject),
             clientDataJSON: base64url.fromBase64(result.response.clientDataJSON),
-            clientExtensionResults: {},
-            type: 'public-key',
+            clientExtensionResults: {}, 
             email:resultAnon.user.handle,
           },
+          type: 'public-key',
           handle:resultAnon.user.handle,
         };
         let authn = await loginAnonymousComplete(convertToRegistrationResponse);
@@ -177,11 +178,12 @@ const LoginScreen = props => {
           },
           clientExtensionResults: {},
           type: 'public-key',
-          handle: userHandle,
+          handle: userHandle
         };
 
         let authn = await loginComplete( convertToAuthenticationResponseJSON);
         console.log('loginResult ', authn);
+
         if(authn.error) {setErrortext(`Error: ${authn.error.message}`);}
       }
 

@@ -149,10 +149,10 @@ const SignupScreen = props => {
             ...attResponse.response,
             attestationObject: base64url.fromBase64(attResponse.response.attestationObject),
             clientDataJSON: base64url.fromBase64(attResponse.response.clientDataJSON),
-            clientExtensionResults: {},
-            type: 'public-key',
+            clientExtensionResults: {}, 
             email:userHandle,
           },
+          type: 'public-key',
         };
 
         let confResult = await signupConfirm(convertToRegistrationResponse);
