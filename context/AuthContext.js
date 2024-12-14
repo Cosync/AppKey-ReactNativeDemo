@@ -147,9 +147,9 @@ export function AuthProvider({ children }) {
         return result;
     }
 
-    async function signupComplete(handle, signupCode){
+    async function signupComplete(signupCode){
 
-        let result = await apiRequest('signupComplete', {handle:handle, code:signupCode, signupToken:signToken} );
+        let result = await apiRequest('signupComplete', { code:signupCode, signupToken:signToken} );
         if(result['access-token']){
             setSignToken(null);
             setUserTokenData(result['access-token']);

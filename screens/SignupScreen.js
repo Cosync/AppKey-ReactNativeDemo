@@ -99,7 +99,7 @@ const SignupScreen = props => {
     try {
 
 
-        let authn = await signupComplete(userHandle, signupCode);
+        let authn = await signupComplete(signupCode);
 
         if(authn.error) {setErrorCodetext(`Error: ${authn.error.message}`);}
         else {
