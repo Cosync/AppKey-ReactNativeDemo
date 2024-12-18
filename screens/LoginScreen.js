@@ -363,6 +363,11 @@ const LoginScreen = props => {
               </TouchableOpacity>
             </View>
 
+            <View style={styles.infoSection}>
+              <Text style={styles.registerTextStyle}>Welcome to the AppKey demo! Log in securely using your passkey or sign up with your email to create one in seconds. See for yourself how fast and seamless passkey creation can be with AppKey—no passwords, no hassle, just security made simple.</Text>
+            </View>
+            
+
               <View style={styles.SectionStyle}>
                 <TextInput
                   style={styles.inputStyle}
@@ -494,6 +499,9 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 14,
+  },
+  infoSection:{ 
+    margin: 10,
   },
   errorTextStyle: {
     color: 'red',

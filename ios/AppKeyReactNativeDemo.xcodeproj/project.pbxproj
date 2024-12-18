@@ -480,7 +480,9 @@
 				DEVELOPMENT_TEAM = WQQLK89MX8;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = AppKeyReactNativeDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				INFOPLIST_KEY_CFBundleDisplayName = "AppKey RN Demo";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -509,7 +511,9 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = WQQLK89MX8;
 				INFOPLIST_FILE = AppKeyReactNativeDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 18.0;
+				INFOPLIST_KEY_CFBundleDisplayName = "AppKey RN Demo";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.developer-tools";
+				IPHONEOS_DEPLOYMENT_TARGET = 17.6;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",

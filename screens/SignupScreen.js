@@ -198,6 +198,10 @@ const SignupScreen = props => {
               />
             </View>
 
+            <View style={styles.infoSection}>
+              <Text style={styles.registerTextStyle}>Welcome to the AppKey demo! Sign up with your email to create your passkey and log in effortlessly. Discover how simple and secure passwordless login can be—no passwords, just your passkey.</Text>
+            </View>
+
 
             {infotext !== '' ? (
               <Text style={styles.registerTextStyle}> {infotext} </Text>
@@ -381,6 +385,9 @@ const styles = StyleSheet.create({
     color: 'red',
     textAlign: 'center',
     fontSize: 14,
+  },
+  infoSection:{ 
+    margin: 10,
   },
   viewSection: {
     marginTop: 20,

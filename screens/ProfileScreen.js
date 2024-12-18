@@ -28,7 +28,7 @@
 import React, { useEffect, useState, useContext } from 'react';
 import {
   StyleSheet,
-  Switch,
+  Image,
   View,
   Text,
   TextInput,
@@ -123,6 +123,21 @@ const ProfileScreen = props => {
   return (
     <View style={styles.mainBody}>
       <Loader loading={loading} />
+      <View style={{ alignItems: 'center' }}>
+          <Image
+            source={require('../assets/applogo.png')}
+            style={{ 
+              height: 200,
+              resizeMode: 'contain',
+              margin: 30,
+            }}
+          />
+        </View>
+
+      <View style={styles.infoSection}>
+        <Text style={styles.bodyTextStyle}>Welcome to the AppKey demo! Sign up with your email to create your passkey and log in effortlessly. Discover how simple and secure passwordless login can be—no passwords, just your passkey.</Text>
+      </View>
+      
 
     { userNameScreen && !userData.userName ?
      <View>
@@ -246,7 +261,9 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: '#fff',
   },
-
+  infoSection:{ 
+    margin: 10,
+  },
   viewSection: {
     marginTop: 20,
     marginBottom: 20,
