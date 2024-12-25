@@ -57,7 +57,7 @@ const SignupScreen = props => {
   let [verifyCode, setVerifyCode] = useState(false);
 
   let [userLocale, setUserLocale] = useState('EN');
-  const {validateInput, appData, signup, signupConfirm, signupComplete, appLocales } = useContext(AuthContext);
+  const {validateInput, signup, signupConfirm, signupComplete, appLocales } = useContext(AuthContext);
 
   const ref_input_displayname = useRef();
   const ref_input_email = useRef();
