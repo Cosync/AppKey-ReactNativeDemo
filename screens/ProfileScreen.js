@@ -234,6 +234,15 @@ const ProfileScreen = props => {
               <Text style={styles.buttonTextStyle}>Update Profile</Text>
             </TouchableOpacity>
           </View>
+          {userData && userData.handle.indexOf("ANON_") < 0 &&  
+          <View style={styles.SectionStyle}>
+           <TouchableOpacity
+              style={styles.buttonStyle}
+              activeOpacity={0.5}
+              onPress={() => props.navigation.navigate('Passkey')}>
+              <Text style={styles.buttonTextStyle}> Passkey</Text>
+            </TouchableOpacity>
+          </View> }
 
           <View style={styles.SectionStyle}>
             <TouchableOpacity

@@ -37,7 +37,7 @@ import {
   KeyboardAvoidingView,
   Linking
 } from 'react-native';
-import Loader from '../components/Loader';
+ 
 import { Passkey } from 'react-native-passkey';
 import base64url from 'base64url';
 import { appleAuth, AppleButton } from '@invertase/react-native-apple-authentication';
@@ -50,7 +50,7 @@ import {Config} from '../config/Config';
 
 const LoginScreen = props => {
 
-  let [userHandle, setUserHandle] = useState('');
+  let [userHandle, setUserHandle] = useState();
 
   let [loading, setLoading] = useState(false);
 
@@ -331,7 +331,7 @@ const LoginScreen = props => {
 
   return (
     <View style={styles.mainBody}>
-      <Loader loading={loading} />
+     
 
       <ScrollView keyboardShouldPersistTaps="handled"> 
           <KeyboardAvoidingView enabled>
