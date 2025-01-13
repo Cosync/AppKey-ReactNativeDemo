@@ -38,10 +38,10 @@ import {  StyleSheet,
   KeyboardAvoidingView } from 'react-native';
 
 import _ from 'lodash';
-import Loader from '../components/Loader';
+ 
 import { AuthContext } from '../context/AuthContext';
 import { Dropdown } from 'react-native-element-dropdown';
-import { Passkey, PasskeyRegistrationResult } from 'react-native-passkey';
+import { Passkey } from 'react-native-passkey';
 import base64url from 'base64url';
 
 const SignupScreen = props => {
@@ -53,7 +53,7 @@ const SignupScreen = props => {
 
   let [userHandle, setUserHandle] = useState('');
   let [signupCode, setSignupCode] = useState('');
-  let [loading, setLoading] = useState(false);
+ 
   let [verifyCode, setVerifyCode] = useState(false);
 
   let [userLocale, setUserLocale] = useState('EN');
@@ -94,7 +94,7 @@ const SignupScreen = props => {
 
   const handleSubmitVerifyCodePress = async () => {
     setErrorCodetext('');
-    setLoading(true);
+   
 
     try {
 
@@ -112,11 +112,7 @@ const SignupScreen = props => {
       console.error(error);
       setErrorCodetext(`Error: ${error.message}`);
     }
-    finally{
-      setLoading(false);
-    }
-
-
+     
   };
 
 
@@ -160,7 +156,7 @@ const SignupScreen = props => {
 
         if (confResult && confResult.error) {
           setErrorCodetext(`Error: ${confResult.error.message}`);
-          setLoading(false);
+        
           return;
         }
 
@@ -171,9 +167,7 @@ const SignupScreen = props => {
     } catch (error) {
       setErrorCodetext(`Error: ${error.message}`);
     }
-    finally{
-      setLoading(false);
-    }
+    
 
   };
 
@@ -184,7 +178,7 @@ const SignupScreen = props => {
 
   return (
     <View style={styles.mainBody}>
-      <Loader loading={loading} />
+     
       <ScrollView keyboardShouldPersistTaps="handled">
       <KeyboardAvoidingView enabled>
             <View style={{ alignItems: 'center' }}>

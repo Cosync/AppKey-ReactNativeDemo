@@ -37,15 +37,13 @@ import {
 } from 'react-native';
 import { Passkey } from 'react-native-passkey';
 import base64url from 'base64url';
-
-import Loader from '../components/Loader';
-
+ 
 import { AuthContext } from '../context/AuthContext';
 
 
 const PasskeyScreen = props => {
 
-  let [loading, setLoading] = useState(false);
+   
   let [errortext, setErrortext] = useState();
   let [successText, setSuccessText] = useState();
   
@@ -280,7 +278,7 @@ const PasskeyScreen = props => {
 
   return (
     <View style={styles.mainBody}>
-      <Loader loading={loading} />
+      
       <View style={{ alignItems: 'center' }}>
         <Image
           source={require('../assets/applogo.png')}

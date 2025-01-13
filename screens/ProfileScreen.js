@@ -35,16 +35,14 @@ import {
   TouchableOpacity,
 
 } from 'react-native';
-
-
-import Loader from '../components/Loader';
+ 
 
 import { AuthContext } from '../context/AuthContext';
 import { Dropdown } from 'react-native-element-dropdown';
 //https://www.npmjs.com/package/react-native-element-dropdown
 
 const ProfileScreen = props => {
-  let [loading, setLoading] = useState(false);
+  
   let [displayName, setDisplayName] = useState('');
   let [userLocale, setLocale] = useState('EN');
   let [errortext, setErrortext] = useState('');
@@ -82,13 +80,11 @@ const ProfileScreen = props => {
       alert('Please fill display name');
       return;
     }
-
-    setLoading(true);
-
+ 
     let result = updateProfile({displayName:displayName});
 
     if(result.error) {setErrortext(`Error: ${result.error.message}`);}
-    setLoading(false);
+    
 
   };
 
@@ -100,11 +96,11 @@ const ProfileScreen = props => {
       return;
     }
 
-    setLoading(true);
+    
 
     let result = await setUserName(userName);
 
-    setLoading(false);
+   
 
     if(result.error) {setErrortext(`Error: ${result.error.message}`);}
     else {
@@ -122,7 +118,7 @@ const ProfileScreen = props => {
 
   return (
     <View style={styles.mainBody}>
-      <Loader loading={loading} />
+     
       <View style={{ alignItems: 'center' }}>
           <Image
             source={require('../assets/applogo.png')}

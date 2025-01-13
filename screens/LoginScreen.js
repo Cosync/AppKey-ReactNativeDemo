@@ -50,13 +50,8 @@ import {Config} from '../config/Config';
 
 const LoginScreen = props => {
 
-  let [userHandle, setUserHandle] = useState();
-
-  let [loading, setLoading] = useState(false);
-
-  let [errortext, setErrortext] = useState('');
- 
-
+  let [userHandle, setUserHandle] = useState(); 
+  let [errortext, setErrortext] = useState(''); 
   const { validateInput, socialLogin, socialSignup, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
   global.Buffer = require('buffer').Buffer;
 
@@ -88,7 +83,7 @@ const LoginScreen = props => {
   const loginAnonymousUser = async () => {
 
     try {
-      setLoading(true);
+     
 
       let resultAnon = await loginAnonymous();
       console.log('AppKey loginAnonymous resultAnon  ', resultAnon);
@@ -127,9 +122,7 @@ const LoginScreen = props => {
     } catch (error) {
       setErrortext(error.message);
     }
-    finally{
-      setLoading(false);
-    }
+    
 
   };
 
@@ -141,10 +134,7 @@ const LoginScreen = props => {
       alert('Please fill a valid handle');
       return;
     }
-
-
-    setLoading(true);
-
+ 
 
     try {
       let result = await login(userHandle);
@@ -192,11 +182,7 @@ const LoginScreen = props => {
       console.error(error);
       setErrortext(error.message);
     }
-    finally{
-      setLoading(false);
-    }
-
-
+    
   };
 
 
@@ -226,7 +212,7 @@ const LoginScreen = props => {
 
   async function socialLoginHandler(token, profile, provider) {
     try {
-      setLoading(true);
+     
 
       let result = await socialLogin(token, provider, false);
       console.log('socialLoginHandler result ', result);
@@ -262,9 +248,7 @@ const LoginScreen = props => {
       console.log('socialLoginHandler error ', error)
       setErrortext(`Error: ${error.message}`);
     }
-    finally{
-      setLoading(false);
-    }
+     
   }
 
   async function onAppleButtonPress() {
@@ -302,26 +286,18 @@ const LoginScreen = props => {
     } catch (error) {
       setErrortext(`AppKey: ${error.message}`);
     }
-    finally{
-      setLoading(false);
-    }
+    
   }
 
   async function socialSignupHandler(token, provider, handle, displayName, locale) {
     try {
-      setLoading(true);
+      
       let result = await socialSignup(token, provider, handle, displayName, locale);
       if(result.error) {setErrortext(`Error: ${result.error.message}`);}
 
     } catch (error) {
       setErrortext(`Error: ${error.message}`);
-    }
-    finally{
-      setLoading(false);
-    }
-
-
-
+    } 
   }
 
   async function openLink(url) {
