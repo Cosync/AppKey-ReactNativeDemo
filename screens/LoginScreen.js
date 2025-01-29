@@ -51,8 +51,10 @@ import {Config} from '../config/Config';
 const LoginScreen = props => {
 
   let [userHandle, setUserHandle] = useState(); 
+  let [token, setToken] = useState(); 
+  let [isResetingKey, setResetingKey] = useState(false); 
   let [errortext, setErrortext] = useState(''); 
-  const { validateInput, socialLogin, socialSignup, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData} = useContext(AuthContext);
+  const { validateInput, socialLogin, socialSignup, login, loginComplete, loginAnonymous, loginAnonymousComplete, appData, addPasskey, addPasskeyComplete} = useContext(AuthContext);
   global.Buffer = require('buffer').Buffer;
 
   useEffect(() => {
@@ -125,6 +127,54 @@ const LoginScreen = props => {
     
 
   };
+ 
+  const addPasskeyHandler = async () => {
+
+    if (!token || token === '') {
+      alert('Please fill a valid token');
+      return;
+    }
+
+    let data = {
+      'access-token' : token
+    };
+
+    let challenge = await addPasskey(data);
+    
+    if (challenge.error) {
+      setErrortext('error', challenge.error.message);
+    }
+    else {
+      challenge.challenge = base64url.toBase64(challenge.challenge);
+
+      let result = await Passkey.register(challenge);
+      const convertToRegistrationResponse = {
+        ...result,
+        id: base64url.fromBase64(result.id),
+        rawId: base64url.fromBase64(result.rawId),
+        response: {
+          ...result.response,
+          attestationObject: base64url.fromBase64(result.response.attestationObject),
+          clientDataJSON: base64url.fromBase64(result.response.clientDataJSON),
+          clientExtensionResults: {},
+          email: userHandle,
+        },
+        type: 'public-key',
+        handle: userHandle,
+        'access-token': token,
+      };
+
+      let authn = await addPasskeyComplete(convertToRegistrationResponse);
+
+      if (authn.error) { setErrortext('error', `Error: ${authn.error.message}`); }
+      else {
+        setErrortext('success', 'Success');
+      }
+
+    }
+  };
+
+
 
   const handleSubmitLogin = async () => {
     setErrortext('');
@@ -139,10 +189,10 @@ const LoginScreen = props => {
     try {
       let result = await login(userHandle);
 
-      if(result.code && result.message){
-        setErrortext(result.message);
-      }
+      if(result.code && result.message)  setErrortext(result.message);
+      else if (result.requireAddPasskey) setResetingKey(true)
       else{
+
 
         console.log('Passkey login result ', result);
 
@@ -340,11 +390,52 @@ const LoginScreen = props => {
             </View>
 
             <View style={styles.infoSection}>
-              <Text style={styles.registerTextStyle}>Welcome to the AppKey demo! Log in securely using your passkey or sign up with your email to create one in seconds. See for yourself how fast and seamless passkey creation can be with AppKey—no passwords, no hassle, just security made simple.</Text>
+              <Text style={styles.headerTextStyle}>Welcome to the AppKey demo! Log in securely using your passkey or sign up with your email to create one in seconds. See for yourself how fast and seamless passkey creation can be with AppKey—no passwords, no hassle, just security made simple.</Text>
             </View>
             
+            {
+            isResetingKey ? 
+            <View>
 
-              <View style={styles.SectionStyle}>
+              <View style={styles.infoSection}>
+                <Text style={styles.infoTextStyle}>Your account has been requested to reset passkey. Please enter a reset passkey token.</Text>
+              </View>
+
+                <View style={styles.sectionStyleBig}>
+                  <TextInput
+                    style={styles.inputStyle}
+                    value={token}
+                    multiline={true}
+                    numberOfLines={6}
+                    onChangeText={value => setToken(value)}
+                    placeholder="Enter Reset Token"
+                    autoCapitalize="none"
+                    autoCorrect={false}
+                    keyboardType="text"
+                    returnKeyType="next"
+                    onSubmitEditing={() => addPasskeyHandler}
+                    blurOnSubmit={false}
+
+                  />
+                </View>
+
+                <TouchableOpacity
+                  style={styles.buttonStyle}
+                  activeOpacity={0.5}
+                  onPress={addPasskeyHandler}>
+                  <Text style={styles.buttonTextStyle}>SUBMIT</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.buttonStyle}
+                  activeOpacity={0.5}
+                  onPress={ () => { setResetingKey(false)} }>
+                  <Text style={styles.buttonTextStyle}>CANCEL</Text>
+                </TouchableOpacity>
+                
+            </View> 
+            : <View>
+              <View style={styles.sectionStyle}>
                 <TextInput
                   style={styles.inputStyle}
                   value={userHandle}
@@ -383,7 +474,7 @@ const LoginScreen = props => {
                 <Text style={styles.buttonTextStyle}> SIGNUP</Text>
               </TouchableOpacity>
 
-              {appData && (appData.googleLoginEnabled || appData.appleLoginEnabled) &&   <Text style={styles.registerTextStyle}> OR </Text>  }
+              {appData && (appData.googleLoginEnabled || appData.appleLoginEnabled) &&   <Text style={styles.headerTextStyle}> OR </Text>  }
 
               {appData && appData.appleLoginEnabled && appData.appleBundleId &&
                 <View style={styles.SectionCenterStyle}>
@@ -407,7 +498,7 @@ const LoginScreen = props => {
                     <Text style={styles.buttonTextStyle}> Sign In With Google</Text>
                   </TouchableOpacity>
               }
-
+            </View>}
 
           </KeyboardAvoidingView>
 
@@ -427,7 +518,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent:'space-between'
   },
-  SectionStyle: {
+  sectionStyleBig: {
+    flexDirection: 'row',
+    height: 120,
+    marginTop: 20,
+    marginLeft: 35,
+    marginRight: 35,
+    margin: 10,
+  },
+  sectionStyle: {
     flexDirection: 'row',
     height: 40,
     marginTop: 20,
@@ -458,6 +557,7 @@ const styles = StyleSheet.create({
   },
   buttonTextStyle: {
     color: 'white',
+    fontWeight: 'bold',
     paddingVertical: 10,
     fontSize: 16,
   },
@@ -467,17 +567,23 @@ const styles = StyleSheet.create({
     paddingLeft: 15,
     paddingRight: 15,
     borderWidth: 1,
-    borderRadius: 30,
+    borderRadius: 15,
     borderColor: '#4638ab',
   },
-  registerTextStyle: {
+  headerTextStyle: {
     color: '#4638ab',
     textAlign: 'center',
     fontWeight: 'bold',
     fontSize: 14,
   },
+  infoTextStyle: {
+    color: '#000',
+    textAlign: 'center', 
+    fontSize: 14,
+  },
   infoSection:{ 
     margin: 10,
+    paddingBottom:10
   },
   errorTextStyle: {
     color: 'red',

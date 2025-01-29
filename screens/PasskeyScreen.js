@@ -68,8 +68,8 @@ const PasskeyScreen = props => {
     if (keyOptions.addingKey || keyOptions.editingKey || keyOptions.deletingKey) { verifyAlert(); }
   }, [keyOptions, verifyAlert]);
 
-  const toggleKeyOption = (type) => {
-    if (type === 'clear') {
+  const toggleKeyOption = (option) => {
+    if (option === 'clear') {
       setKeyOptions({
         ...keyOptions,
         ['addingKey']: false,
@@ -80,7 +80,10 @@ const PasskeyScreen = props => {
     else {
       setKeyOptions({
         ...keyOptions,
-        [type]: true
+        ['addingKey']: false,
+        ['editingKey']: false,
+        ['deletingKey']: false,
+        [option]: true
       });
     }
   };
@@ -337,7 +340,7 @@ const PasskeyScreen = props => {
 
         <View style={styles.viewSection}>
 
-          <View style={styles.SectionStyle}>
+          <View style={styles.sectionStyle}>
             <TouchableOpacity
               style={styles.buttonStyle}
               activeOpacity={0.5}
@@ -378,7 +381,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     alignItems: 'center',
   },
-  SectionStyle: {
+  sectionStyle: {
     flexDirection: 'row',
     height: 40,
     marginTop: 20,
