@@ -304,10 +304,9 @@ export function AuthProvider({ children }) {
             }
 
 
-            console.log('apiRequest result ', result);
-            
+            console.log('apiRequest result ', result); 
 
-            if (result && result.code){
+            if (result && result.code && result.message){
                 if(showAlert === true) { setErrorRequest(result); }
                 if(result.code === 405) { logout(); }
                 return {error:result};
