@@ -16,7 +16,8 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 npm install 
 cd ios && pod install && cd.. 
  
-other command:
+try the following commands if fail:
+   pod update
    xcode-select --install
    brew install cocoapods
    sudo xcode-select -s /Applications/Xcode.app/Contents/Developer

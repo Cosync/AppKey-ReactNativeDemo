@@ -149,7 +149,7 @@ const PasskeyScreen = props => {
 
     result.challenge = base64url.toBase64(result.challenge);
 
-    let assertion = await Passkey.authenticate(result);
+    let assertion = await Passkey.get(result);
     if (!assertion.id) {
       showInfoText('error', 'Invalid Passkey');
       return;
