@@ -96,7 +96,7 @@ const LoginScreen = props => {
       else {
         resultAnon.challenge = base64url.toBase64(resultAnon.challenge);
 
-        let result = await Passkey.register(resultAnon);
+        let result = await Passkey.create(resultAnon);
 
         console.log('sign passkey attResponse ', result);
 
@@ -147,7 +147,7 @@ const LoginScreen = props => {
     else {
       challenge.challenge = base64url.toBase64(challenge.challenge);
 
-      let result = await Passkey.register(challenge);
+      let result = await Passkey.create(challenge);
       const convertToRegistrationResponse = {
         ...result,
         id: base64url.fromBase64(result.id),

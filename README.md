@@ -16,6 +16,10 @@ This is a new [**React Native**](https://reactnative.dev) project, bootstrapped 
 npm install 
 cd ios && pod install && cd.. 
  
+other command:
+   xcode-select --install
+   brew install cocoapods
+   sudo xcode-select -s /Applications/Xcode.app/Contents/Developer
 
 ### Update Xcode config
 1, open AppKeyReactNativeDemo.xcworkspace in ios folder

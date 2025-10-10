@@ -134,7 +134,7 @@ const SignupScreen = props => {
       else if(result.challenge){
 
         result.challenge = base64url.toBase64(result.challenge);
-        let attResponse = await Passkey.register(result);
+        let attResponse = await Passkey.create(result);
         attResponse.handle = userHandle;
 
         console.log('sign passkey attResponse ', attResponse);
